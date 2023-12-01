@@ -1,0 +1,108 @@
+= Cilium playground
+
+Requeryment
+- kind
+
+== Too many open files
+
+[source,bash]
+----
+sudo sysctl fs.inotify.max_user_watches=524288
+sudo sysctl fs.inotify.max_user_instances=512
+----
+
+https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files
+
+== Create a kin cluster as root
+
+[source,bash]
+----
+curl -LO https://raw.githubusercontent.com/cilium/cilium/1.14.4/Documentation/installation/kind-config.yaml
+export KIND_EXPERIMENTAL_PROVIDER=podman kind create cluster
+sudo kind create cluster --config=kind-config.yaml
+----
+
+[source,bash]
+----
+sudo kubectl get nodes
+----
+
+== Install Cilium on the cluster
+
+[source,bash]
+----
+sudo cilium install --version 1.14.4
+----
+
+
+.To validate that Cilium has been properly installed, you can run
+[source,bash]
+----
+sudo cilium status --wait
+----
+
+[source,bash]
+----
+sudo cilium connectivity test
+----
+
+== Install Hubble in the cluster
+
+[source,bash]
+----
+sudo cilium hubble enable
+----
+
+.To validate that Hubble has been properly enabled, you can run
+[source,bash]
+----
+sudo cilium status --wait
+----
+
+[source,bash]
+----
+sudo cilium hubble port-forward&
+----
+
+[source,bash]
+----
+sudo hubble status
+----
+
+..Enable the Hubble UI
+[source,bash]
+----
+sudo cilium hubble enable --ui
+----
+
+.Open the Hubble UI
+[source,bash]
+----
+sudo cilium hubble ui
+----
+
+== LoadBalancer IP Address Management (LB IPAM)
+
+Read more about https://docs.cilium.io/en/stable/network/lb-ipam/[LoadBalancer IP Address Management (LB IPAM)] on Cilium website.
+
+[source,bash]
+----
+sudo kubectl create -f blue-pool.yaml
+----
+
+[source,bash]
+----
+sudo kubectl create -f red-pool.yaml
+----
+
+[source,bash]
+----
+sudo kubectl create -f service-red.yaml
+----
+
+
+== Links
+
+- https://kind.sigs.k8s.io/#installation-and-usage
+- https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/
+- https://docs.cilium.io/en/stable/network/lb-ipam/
