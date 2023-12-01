@@ -1,9 +1,12 @@
 = Cilium playground
 
-Requeryment
-- kind
+This repo is my Cilium playground.
+
+I have used https://kind.sigs.k8s.io/[Kind] for my cluster and running it as `root`.
 
 == Too many open files
+
+We need to change some values to avoid https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files[Too many open files].
 
 [source,bash]
 ----
@@ -11,17 +14,16 @@ sudo sysctl fs.inotify.max_user_watches=524288
 sudo sysctl fs.inotify.max_user_instances=512
 ----
 
-https://kind.sigs.k8s.io/docs/user/known-issues/#pod-errors-due-to-too-many-open-files
+== Create a kind cluster as root
 
-== Create a kin cluster as root
-
+.Download kind-config.yaml and create the cluster
 [source,bash]
 ----
 curl -LO https://raw.githubusercontent.com/cilium/cilium/1.14.4/Documentation/installation/kind-config.yaml
-export KIND_EXPERIMENTAL_PROVIDER=podman kind create cluster
 sudo kind create cluster --config=kind-config.yaml
 ----
 
+.Let's have a look at running nodes
 [source,bash]
 ----
 sudo kubectl get nodes
@@ -29,11 +31,11 @@ sudo kubectl get nodes
 
 == Install Cilium on the cluster
 
+.Add cilium to the cluster
 [source,bash]
 ----
 sudo cilium install --version 1.14.4
 ----
-
 
 .To validate that Cilium has been properly installed, you can run
 [source,bash]
@@ -41,6 +43,7 @@ sudo cilium install --version 1.14.4
 sudo cilium status --wait
 ----
 
+.Optional do a test of the cluster
 [source,bash]
 ----
 sudo cilium connectivity test
@@ -48,6 +51,7 @@ sudo cilium connectivity test
 
 == Install Hubble in the cluster
 
+.Add hubble to the cluster
 [source,bash]
 ----
 sudo cilium hubble enable
@@ -59,17 +63,19 @@ sudo cilium hubble enable
 sudo cilium status --wait
 ----
 
+.Creaate port forward to hubbe
 [source,bash]
 ----
 sudo cilium hubble port-forward&
 ----
 
+.Get the status of hubble
 [source,bash]
 ----
 sudo hubble status
 ----
 
-..Enable the Hubble UI
+.Enable the Hubble UI
 [source,bash]
 ----
 sudo cilium hubble enable --ui
@@ -81,25 +87,50 @@ sudo cilium hubble enable --ui
 sudo cilium hubble ui
 ----
 
+http://localhost:12000[Hubble UI]
+
+
 == LoadBalancer IP Address Management (LB IPAM)
+
+We like the cluster to be able to assign external ips to servies of type `LoadBalancer`.
 
 Read more about https://docs.cilium.io/en/stable/network/lb-ipam/[LoadBalancer IP Address Management (LB IPAM)] on Cilium website.
 
+.Create a ip pool in the range 192.168.3.0/24
 [source,bash]
 ----
 sudo kubectl create -f blue-pool.yaml
 ----
 
+.Create a ip pool in the range 192.168.5.0/24
 [source,bash]
 ----
 sudo kubectl create -f red-pool.yaml
 ----
 
+.Get ip pools
+[source,bash]
+----
+sudu kubectl get ippools
+----
+
+.Create a namespace example
 [source,bash]
 ----
 sudo kubectl create -f service-red.yaml
 ----
 
+.Create a service with ip form red-pool in namespace example
+[source,bash]
+----
+sudo kubectl create -f service-red.yaml
+----
+
+.Get all pods and services in the example namespace
+[source,bash]
+----
+sudo kubectl get pods,services -n example
+----
 
 == Links
 
