@@ -29,6 +29,43 @@ sudo kind create cluster --config=kind-config.yaml
 sudo kubectl get nodes
 ----
 
+=== Add kubernetes-dashboard
+
+[source,bash]
+----
+sudo helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+----
+
+[source,bash]
+----
+sudo helm install dashboard kubernetes-dashboard/kubernetes-dashboard -n kubernetes-dashboard --create-namespace
+----
+
+[source,bash]
+----
+sudo kubectl proxy
+----
+
+[source,bash]
+----
+sudo kubectl create -f ServiceAccount-admin-user.yaml
+----
+
+[source,bash]
+----
+sudo kubectl create -f ClusterRoleBinding-admin-user.yaml
+----
+
+[source,bash]
+----
+sudo kubectl -n kubernetes-dashboard create token admin-user
+----
+
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:dashboard-kubernetes-dashboard:https/proxy/#/login[kubernetes-dashboard]
+
+- https://medium.com/@munza/local-kubernetes-with-kind-helm-dashboard-41152e4b3b3d[Local Kubernetes with kind, Helm & Dashboard]
+- https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md[Creating sample user]
+
 == Install Cilium on the cluster
 
 .Add cilium to the cluster
